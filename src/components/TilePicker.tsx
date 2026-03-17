@@ -3,9 +3,10 @@ import { useMapStore } from '../state/mapStore';
 import tilesData from '../data/tiles.json';
 import type { Tile } from '../types';
 import { useDraggable } from '@dnd-kit/core';
+import { GripVertical } from 'lucide-react';
 
 const DraggableTile: React.FC<{ tile: Tile; onClick: () => void; isSelectable: boolean }> = ({ tile, onClick, isSelectable }) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { listeners, setNodeRef, transform } = useDraggable({
     id: `picker-${tile.id}`,
     data: { tileId: tile.id }
   });
@@ -20,13 +21,20 @@ const DraggableTile: React.FC<{ tile: Tile; onClick: () => void; isSelectable: b
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
       className={`flex items-center space-x-4 p-2 rounded cursor-pointer transition-colors ${
         isSelectable ? 'hover:bg-slate-800' : 'opacity-50'
       }`}
       onClick={onClick}
     >
+      <button
+        type="button"
+        className="text-slate-500 hover:text-slate-300 transition-colors"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+        {...listeners}
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
       <div className="w-16 h-16 flex-shrink-0 bg-slate-800 rounded overflow-hidden">
         {imageFailed ? (
           <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-500">Missing</div>
@@ -41,8 +49,8 @@ const DraggableTile: React.FC<{ tile: Tile; onClick: () => void; isSelectable: b
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-white font-bold truncate">#{tile.id}</div>
-        <div className="text-slate-400 text-sm truncate">{tile.name}</div>
+        <div className="text-white font-bold text-base truncate">#{tile.id}</div>
+        <div className="text-slate-300 text-base truncate">{tile.name}</div>
       </div>
     </div>
   );

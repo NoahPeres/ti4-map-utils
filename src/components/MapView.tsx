@@ -7,7 +7,7 @@ import type { Layout } from '../types';
 import { ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 
 export const MapView: React.FC = () => {
-  const { tiles, selectedHexIndex, selectHex, cycleTile } = useMapStore();
+  const { tiles, selectedHexIndex, selectHex, setTile } = useMapStore();
   const [zoom, setZoom] = useState(0.8);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -113,10 +113,6 @@ export const MapView: React.FC = () => {
         y: localY - (localY - prev.y) * zoomRatio
       }));
       setZoom(boundedZoom);
-    } else if (selectedHexIndex !== null) {
-      e.preventDefault();
-      const direction = e.deltaY > 0 ? 1 : -1;
-      cycleTile(direction);
     }
   };
 
@@ -199,7 +195,7 @@ export const MapView: React.FC = () => {
       </div>
 
       <div className="absolute bottom-4 left-4 z-10 text-[10px] text-slate-500 italic pointer-events-none">
-        Shift + Drag to pan • Ctrl + Wheel to zoom • Scroll wheel to cycle tiles
+        Shift + Drag to pan • Ctrl + Wheel to zoom • Right click to clear a tile
       </div>
 
       <div 
@@ -235,6 +231,7 @@ export const MapView: React.FC = () => {
                   tileImage={tileInfo?.image}
                   isSelected={selectedHexIndex === index}
                   onSelect={() => selectHex(index)}
+                  onClear={() => setTile(index, null)}
                   systemName={tileInfo?.name}
                 />
               );
