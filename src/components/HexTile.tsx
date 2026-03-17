@@ -47,8 +47,11 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
       onContextMenu={(e) => {
         e.preventDefault();
         if (tileId) {
+          if (onClear) {
+            onClear();
+            return;
+          }
           onSelect();
-          onClear?.();
         }
       }}
     >
