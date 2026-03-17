@@ -22,6 +22,10 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
     data: { index }
   });
 
+  const setSvgNodeRef = (node: SVGGElement | null) => {
+    setNodeRef(node as unknown as HTMLElement | null);
+  };
+
   const [imageFailed, setImageFailed] = useState(false);
 
   // Flat-topped hex coordinates
@@ -37,7 +41,7 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
 
   return (
     <g 
-      ref={setNodeRef as any}
+      ref={setSvgNodeRef}
       className={`cursor-pointer transition-all duration-200 ${isSelected || isOver ? 'filter drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]' : ''}`}
       onClick={onSelect}
       onContextMenu={(e) => {

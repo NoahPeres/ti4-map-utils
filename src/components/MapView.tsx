@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMapStore } from '../state/mapStore';
 import { HexTile } from './HexTile';
 import layout6p from '../data/layouts/6p.json';
 import tilesData from '../data/tiles.json';
-import type { Layout } from '../types';
+import type { Layout, Tile } from '../types';
 import { ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 
 export const MapView: React.FC = () => {
@@ -19,7 +19,7 @@ export const MapView: React.FC = () => {
   const currentLayout: Layout = layout6p;
 
   // Calculate bounding box and center map
-  const fitToScreen = () => {
+  const fitToScreen = useCallback(() => {
     if (!currentLayout || !currentLayout.coords || currentLayout.coords.length === 0) return;
     if (viewport.width <= 0 || viewport.height <= 0) return;
 
@@ -61,7 +61,7 @@ export const MapView: React.FC = () => {
       x: (containerWidth / 2) - (minX + mapWidth / 2) * newZoom,
       y: (containerHeight / 2) - (minY + mapHeight / 2) * newZoom
     });
-  };
+  }, [currentLayout, viewport.height, viewport.width]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -87,7 +87,7 @@ export const MapView: React.FC = () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
     };
-  }, [currentLayout, viewport.width, viewport.height]);
+  }, [fitToScreen]);
 
   const handleWheel = (e: React.WheelEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -214,7 +214,7 @@ export const MapView: React.FC = () => {
           <g style={{ pointerEvents: 'all' }}>
             {currentLayout.coords.map((coord, index) => {
               const tileId = tiles[index];
-              const tileInfo = tilesData.find((t: any) => t.id === tileId);
+              const tileInfo = (tilesData as Tile[]).find((t) => t.id === tileId);
               const originX = viewport.width / 2;
               const originY = viewport.height / 2;
               
