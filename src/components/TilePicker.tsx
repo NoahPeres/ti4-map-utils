@@ -32,7 +32,7 @@ const DraggableTile: React.FC<{ tile: Tile; onClick: () => void; isSelectable: b
           <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-500">Missing</div>
         ) : (
           <img
-            src={`/tiles/${tile.image}`}
+            src={`${import.meta.env.BASE_URL}tiles/${tile.image}`}
             alt={tile.name}
             className="w-full h-full object-contain pointer-events-none"
             draggable={false}

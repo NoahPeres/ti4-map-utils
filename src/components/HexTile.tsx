@@ -46,7 +46,7 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
       />
       {tileId && !imageFailed && (
         <image
-          href={tileImage ? `/tiles/${tileImage}` : `/tiles/ST_${tileId}.webp`}
+          href={tileImage ? `${import.meta.env.BASE_URL}tiles/${tileImage}` : `${import.meta.env.BASE_URL}tiles/ST_${tileId}.webp`}
           x={x - size}
           y={y - size * Math.sqrt(3)/2}
           width={size * 2}
