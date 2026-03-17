@@ -3,10 +3,13 @@ import { Toolbar } from './components/Toolbar';
 import { MapView } from './components/MapView';
 import { TilePicker } from './components/TilePicker';
 import { useMapStore } from './state/mapStore';
-import { DndContext, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 
 function App() {
   const { initializeFromUrl, setTile, selectedHexIndex } = useMapStore();
+  const sensors = useSensors(
+    useSensor(PointerSensor)
+  );
 
   useEffect(() => {
     initializeFromUrl();
@@ -38,7 +41,7 @@ function App() {
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="flex flex-col h-screen bg-slate-950 overflow-hidden">
         <Toolbar />
         <div className="flex-1 flex overflow-hidden">
@@ -51,4 +54,3 @@ function App() {
 }
 
 export default App;
-

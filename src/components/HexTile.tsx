@@ -12,14 +12,19 @@ interface HexTileProps {
   tileImage?: string;
   isSelected: boolean;
   onSelect: () => void;
+  onClear?: () => void;
   systemName?: string;
 }
 
-export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, originY, tileId, tileImage, isSelected, onSelect, systemName }) => {
+export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, originY, tileId, tileImage, isSelected, onSelect, onClear, systemName }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `hex-${index}`,
     data: { index }
   });
+
+  const setSvgNodeRef = (node: SVGGElement | null) => {
+    setNodeRef(node as unknown as HTMLElement | null);
+  };
 
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -36,9 +41,19 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
 
   return (
     <g 
-      ref={setNodeRef as any}
+      ref={setSvgNodeRef}
       className={`cursor-pointer transition-all duration-200 ${isSelected || isOver ? 'filter drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]' : ''}`}
       onClick={onSelect}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        if (tileId) {
+          if (onClear) {
+            onClear();
+            return;
+          }
+          onSelect();
+        }
+      }}
     >
       <polygon
         points={points.join(' ')}
@@ -67,7 +82,7 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
           <text 
             textAnchor="middle" 
             dy="-1.2em" 
-            className="fill-white text-[10px] font-bold pointer-events-none drop-shadow-md"
+            className="fill-white text-[12px] font-bold pointer-events-none drop-shadow-md"
           >
             {tileId || 'Empty'}
           </text>
@@ -75,7 +90,7 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
             <text 
               textAnchor="middle" 
               dy="1.5em" 
-              className="fill-slate-300 text-[8px] pointer-events-none drop-shadow-md"
+              className="fill-slate-200 text-[10px] pointer-events-none drop-shadow-md"
             >
               {systemName}
             </text>
