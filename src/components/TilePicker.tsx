@@ -61,8 +61,27 @@ export const TilePicker: React.FC = () => {
 
   const filteredTiles = useMemo(() => {
     const term = searchTerm.toLowerCase();
-    return tilesData.filter(tile => 
-      tile.id.toLowerCase().includes(term) || 
+    const rawTokens = searchTerm
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    if (rawTokens.length > 1) {
+      const normalized = rawTokens.map(t => t.toLowerCase());
+      const tokenSet = new Set(normalized);
+      const matched = tilesData.filter(tile => tokenSet.has(tile.id.toLowerCase()));
+      const matchedIds = new Set(matched.map(t => t.id.toLowerCase()));
+      const allTokensLookLikeIds = normalized.every(t => /^\d+[a-z]*$/i.test(t));
+      const allTokensExist = normalized.every(t => matchedIds.has(t));
+
+      if (allTokensLookLikeIds && allTokensExist) {
+        const byId = new Map(matched.map(t => [t.id.toLowerCase(), t]));
+        return normalized.map(t => byId.get(t)!).filter(Boolean);
+      }
+    }
+
+    return tilesData.filter(tile =>
+      tile.id.toLowerCase().includes(term) ||
       tile.name.toLowerCase().includes(term)
     );
   }, [searchTerm]);
@@ -86,7 +105,10 @@ export const TilePicker: React.FC = () => {
         />
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         {filteredTiles.map((tile: Tile) => (
           <DraggableTile
             key={tile.id}
