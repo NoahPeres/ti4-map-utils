@@ -274,7 +274,7 @@ export const MapView: React.FC = () => {
             }
           }}
           className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-lg shadow-lg backdrop-blur-sm transition-colors border border-slate-700"
-          title="Zoom In (Ctrl + Wheel)"
+          title="Zoom In (Scroll)"
         >
           <ZoomIn className="w-5 h-5" />
         </button>
@@ -292,7 +292,7 @@ export const MapView: React.FC = () => {
             }
           }}
           className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-lg shadow-lg backdrop-blur-sm transition-colors border border-slate-700"
-          title="Zoom Out (Ctrl + Wheel)"
+          title="Zoom Out (Scroll)"
         >
           <ZoomOut className="w-5 h-5" />
         </button>
