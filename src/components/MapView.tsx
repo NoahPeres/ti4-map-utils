@@ -97,30 +97,29 @@ export const MapView: React.FC = () => {
   }, [fitToScreen]);
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault();
-      const zoomFactor = 1.1;
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
-      
-      // Zoom relative to mouse position
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      
-      const localX = mouseX - rect.left;
-      const localY = mouseY - rect.top;
-      
-      const newZoom = e.deltaY > 0 ? zoom / zoomFactor : zoom * zoomFactor;
-      const boundedZoom = Math.max(0.1, Math.min(5, newZoom));
-      
-      const zoomRatio = boundedZoom / zoom;
-      
-      setOffset(prev => ({
-        x: localX - (localX - prev.x) * zoomRatio,
-        y: localY - (localY - prev.y) * zoomRatio
-      }));
-      setZoom(boundedZoom);
-    }
+    if (e.ctrlKey || e.metaKey) return;
+
+    e.preventDefault();
+    const zoomFactor = 1.1;
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const localX = mouseX - rect.left;
+    const localY = mouseY - rect.top;
+
+    const newZoom = e.deltaY > 0 ? zoom / zoomFactor : zoom * zoomFactor;
+    const boundedZoom = Math.max(0.1, Math.min(5, newZoom));
+
+    const zoomRatio = boundedZoom / zoom;
+
+    setOffset(prev => ({
+      x: localX - (localX - prev.x) * zoomRatio,
+      y: localY - (localY - prev.y) * zoomRatio
+    }));
+    setZoom(boundedZoom);
   };
 
   const getPointerLocal = (e: React.PointerEvent) => {
@@ -275,7 +274,7 @@ export const MapView: React.FC = () => {
             }
           }}
           className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-lg shadow-lg backdrop-blur-sm transition-colors border border-slate-700"
-          title="Zoom In (Ctrl + Wheel)"
+          title="Zoom In (Scroll)"
         >
           <ZoomIn className="w-5 h-5" />
         </button>
@@ -293,7 +292,7 @@ export const MapView: React.FC = () => {
             }
           }}
           className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-lg shadow-lg backdrop-blur-sm transition-colors border border-slate-700"
-          title="Zoom Out (Ctrl + Wheel)"
+          title="Zoom Out (Scroll)"
         >
           <ZoomOut className="w-5 h-5" />
         </button>
@@ -307,7 +306,7 @@ export const MapView: React.FC = () => {
       </div>
 
       <div className="absolute bottom-4 left-4 z-10 text-[10px] text-slate-500 italic pointer-events-none">
-        Drag to pan • Pinch to zoom • Ctrl + Wheel to zoom • Right click to clear a tile
+        Scroll to zoom • Pinch to zoom • Drag to pan • Right click to clear a tile
       </div>
 
       <div 
