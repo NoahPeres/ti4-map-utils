@@ -61,10 +61,21 @@ export const TilePicker: React.FC = () => {
 
   const filteredTiles = useMemo(() => {
     const term = searchTerm.toLowerCase();
+    const extractIdParts = (id: string): { n: number; s: string } => {
+      const m = id.match(/^([0-9]+)(.*)$/);
+      if (!m) return { n: Number.POSITIVE_INFINITY, s: id };
+      return { n: parseInt(m[1], 10), s: m[2] || '' };
+    };
+
     return tilesData.filter(tile => 
       tile.id.toLowerCase().includes(term) || 
       tile.name.toLowerCase().includes(term)
-    );
+    ).toSorted((a, b) => {
+      const aa = extractIdParts(a.id);
+      const bb = extractIdParts(b.id);
+      if (aa.n !== bb.n) return aa.n - bb.n;
+      return aa.s.localeCompare(bb.s);
+    });
   }, [searchTerm]);
 
   const handleTileClick = (tileId: string) => {
