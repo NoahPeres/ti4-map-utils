@@ -22,6 +22,9 @@ export const MapView: React.FC = () => {
     startDistance: number;
     startMid: { x: number; y: number };
   }>(null);
+  const rightPanRef = useRef<null | { x: number; y: number }>(null);
+  const rightPanMovedRef = useRef(false);
+  const suppressNextTileContextMenuRef = useRef(false);
 
   const currentLayout: Layout = layout6p;
 
@@ -223,9 +226,13 @@ export const MapView: React.FC = () => {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+    if (e.button === 2 || e.button === 1 || (e.button === 0 && e.shiftKey)) {
       setIsDragging(true);
       setLastPos({ x: e.clientX, y: e.clientY });
+      if (e.button === 2) {
+        rightPanRef.current = { x: e.clientX, y: e.clientY };
+        rightPanMovedRef.current = false;
+      }
       e.preventDefault();
     }
   };
@@ -236,11 +243,31 @@ export const MapView: React.FC = () => {
       const dy = e.clientY - lastPos.y;
       setOffset(prev => ({ x: prev.x + dx, y: prev.y + dy }));
       setLastPos({ x: e.clientX, y: e.clientY });
+
+      const start = rightPanRef.current;
+      if (start) {
+        const mdx = e.clientX - start.x;
+        const mdy = e.clientY - start.y;
+        if (!rightPanMovedRef.current && Math.hypot(mdx, mdy) > 4) {
+          rightPanMovedRef.current = true;
+        }
+      }
     }
   };
 
   const handleMouseUp = () => {
+    if (rightPanRef.current) {
+      suppressNextTileContextMenuRef.current = rightPanMovedRef.current;
+      rightPanRef.current = null;
+      rightPanMovedRef.current = false;
+    }
     setIsDragging(false);
+  };
+
+  const shouldSuppressContextMenu = () => {
+    if (!suppressNextTileContextMenuRef.current) return false;
+    suppressNextTileContextMenuRef.current = false;
+    return true;
   };
 
   return (
@@ -252,6 +279,11 @@ export const MapView: React.FC = () => {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onContextMenu={(e) => {
+        if (isDragging) {
+          e.preventDefault();
+        }
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endPointer}
@@ -306,7 +338,7 @@ export const MapView: React.FC = () => {
       </div>
 
       <div className="absolute bottom-4 left-4 z-10 text-[10px] text-slate-500 italic pointer-events-none">
-        Scroll to zoom • Pinch to zoom • Drag to pan • Right click to clear a tile
+        Scroll to zoom • Pinch to zoom • Drag to pan • Right-drag to pan • Right click to clear a tile
       </div>
 
       <div 
@@ -343,6 +375,7 @@ export const MapView: React.FC = () => {
                   isSelected={selectedHexIndex === index}
                   onSelect={() => selectHex(index)}
                   onClear={() => setTile(index, null)}
+                  shouldSuppressContextMenu={shouldSuppressContextMenu}
                   systemName={tileInfo?.name}
                 />
               );

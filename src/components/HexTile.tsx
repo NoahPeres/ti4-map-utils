@@ -13,10 +13,11 @@ interface HexTileProps {
   isSelected: boolean;
   onSelect: () => void;
   onClear?: () => void;
+  shouldSuppressContextMenu?: () => boolean;
   systemName?: string;
 }
 
-export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, originY, tileId, tileImage, isSelected, onSelect, onClear, systemName }) => {
+export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, originY, tileId, tileImage, isSelected, onSelect, onClear, shouldSuppressContextMenu, systemName }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `hex-${index}`,
     data: { index }
@@ -46,6 +47,7 @@ export const HexTile: React.FC<HexTileProps> = ({ index, q, r, size, originX, or
       onClick={onSelect}
       onContextMenu={(e) => {
         e.preventDefault();
+        if (shouldSuppressContextMenu?.()) return;
         if (tileId) {
           if (onClear) {
             onClear();
