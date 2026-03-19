@@ -25,6 +25,7 @@ export const MapView: React.FC = () => {
   const rightPanRef = useRef<null | { x: number; y: number }>(null);
   const rightPanMovedRef = useRef(false);
   const suppressNextTileContextMenuRef = useRef(false);
+  const suppressContextMenuRef = useRef(false);
 
   const currentLayout: Layout = layout6p;
 
@@ -257,6 +258,7 @@ export const MapView: React.FC = () => {
 
   const handleMouseUp = () => {
     if (rightPanRef.current) {
+      suppressContextMenuRef.current = rightPanMovedRef.current;
       suppressNextTileContextMenuRef.current = rightPanMovedRef.current;
       rightPanRef.current = null;
       rightPanMovedRef.current = false;
@@ -280,7 +282,14 @@ export const MapView: React.FC = () => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onContextMenu={(e) => {
-        if (isDragging) {
+        if (suppressContextMenuRef.current) {
+          suppressContextMenuRef.current = false;
+          if (!e.defaultPrevented) {
+            e.preventDefault();
+          }
+          return;
+        }
+        if (isDragging && !e.defaultPrevented) {
           e.preventDefault();
         }
       }}
