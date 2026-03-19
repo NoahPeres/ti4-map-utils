@@ -240,11 +240,6 @@ export const MapView: React.FC = () => {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging) {
-      const dx = e.clientX - lastPos.x;
-      const dy = e.clientY - lastPos.y;
-      setOffset(prev => ({ x: prev.x + dx, y: prev.y + dy }));
-      setLastPos({ x: e.clientX, y: e.clientY });
-
       const start = rightPanRef.current;
       if (start) {
         const mdx = e.clientX - start.x;
@@ -252,7 +247,16 @@ export const MapView: React.FC = () => {
         if (!rightPanMovedRef.current && Math.hypot(mdx, mdy) > 4) {
           rightPanMovedRef.current = true;
         }
+
+        if (!rightPanMovedRef.current) {
+          return;
+        }
       }
+
+      const dx = e.clientX - lastPos.x;
+      const dy = e.clientY - lastPos.y;
+      setOffset(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+      setLastPos({ x: e.clientX, y: e.clientY });
     }
   };
 
@@ -284,6 +288,7 @@ export const MapView: React.FC = () => {
       onContextMenu={(e) => {
         if (suppressContextMenuRef.current) {
           suppressContextMenuRef.current = false;
+          suppressNextTileContextMenuRef.current = false;
           if (!e.defaultPrevented) {
             e.preventDefault();
           }
