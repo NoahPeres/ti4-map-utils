@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useMapStore } from '../state/mapStore';
 import tilesData from '../data/tiles.json';
 import type { Tile } from '../types';
 import { useDraggable } from '@dnd-kit/core';
-import { GripVertical } from 'lucide-react';
+import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 
 const DraggableTile: React.FC<{ tile: Tile; onClick: () => void; isSelectable: boolean }> = ({ tile, onClick, isSelectable }) => {
   const { listeners, setNodeRef, transform } = useDraggable({
@@ -58,6 +58,29 @@ const DraggableTile: React.FC<{ tile: Tile; onClick: () => void; isSelectable: b
 
 export const TilePicker: React.FC = () => {
   const { searchTerm, setSearchTerm, setTile, selectedHexIndex } = useMapStore();
+  const [isDesktop, setIsDesktop] = useState(true);
+  const [isOpen, setIsOpen] = useState(true);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const update = () => setIsDesktop(mediaQuery.matches);
+    update();
+    const hasModernEvents = typeof mediaQuery.addEventListener === 'function';
+    if (hasModernEvents) {
+      mediaQuery.addEventListener('change', update);
+      return () => mediaQuery.removeEventListener('change', update);
+    }
+    const legacy = mediaQuery as unknown as MediaQueryList & {
+      addListener: (listener: () => void) => void;
+      removeListener: (listener: () => void) => void;
+    };
+    legacy.addListener(update);
+    return () => legacy.removeListener(update);
+  }, []);
+
+  useEffect(() => {
+    setIsOpen(isDesktop);
+  }, [isDesktop]);
 
   const filteredTiles = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -92,43 +115,69 @@ export const TilePicker: React.FC = () => {
     }
   };
 
+  const containerClassName = isDesktop
+    ? 'w-[300px] h-full bg-slate-900 border-l border-slate-700 flex flex-col overflow-hidden'
+    : `fixed left-0 right-0 bottom-0 z-30 bg-slate-900 border-t border-slate-700 flex flex-col overflow-hidden shadow-2xl rounded-t-xl transition-[height] duration-200 ${isOpen ? 'h-[70vh]' : 'h-14'}`;
+
   return (
-    <div className="w-[300px] h-full bg-slate-900 border-l border-slate-700 flex flex-col overflow-hidden">
-      <div className="p-4 border-b border-slate-700">
-        <h2 className="text-white text-lg font-bold mb-4">Tiles</h2>
-        <input
-          type="text"
-          placeholder="Search by ID or name..."
-          className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-      
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-4"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        {filteredTiles.map((tile: Tile) => (
-          <DraggableTile
-            key={tile.id}
-            tile={tile}
-            onClick={() => handleTileClick(tile.id)}
-            isSelectable={selectedHexIndex !== null}
-          />
-        ))}
-        {filteredTiles.length === 0 && (
-          <div className="text-slate-500 text-center py-8 italic">
-            No tiles found matching "{searchTerm}"
+    <div className={containerClassName}>
+      {!isDesktop && (
+        <button
+          type="button"
+          className="h-14 px-4 flex items-center justify-between text-slate-200 border-b border-slate-700"
+          onClick={() => setIsOpen((v) => !v)}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex flex-col items-start min-w-0">
+              <div className="text-white font-bold leading-tight">Tiles</div>
+              <div className="text-[11px] text-slate-400 truncate">
+                {selectedHexIndex !== null ? `Selected hex: #${selectedHexIndex}` : 'Tap to open'}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
-      
-      <div className="p-4 border-t border-slate-700 text-xs text-slate-500 text-center">
-        {selectedHexIndex !== null 
-          ? `Selected hex: #${selectedHexIndex}` 
-          : 'Select a hex on the map to place a tile'}
-      </div>
+          {isOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+        </button>
+      )}
+
+      {(isDesktop || isOpen) && (
+        <>
+          <div className="p-4 border-b border-slate-700">
+            <h2 className="text-white text-lg font-bold mb-4 md:block hidden">Tiles</h2>
+            <input
+              type="text"
+              placeholder="Search by ID or name..."
+              className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div
+            className="flex-1 overflow-y-auto p-4 space-y-4"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {filteredTiles.map((tile: Tile) => (
+              <DraggableTile
+                key={tile.id}
+                tile={tile}
+                onClick={() => handleTileClick(tile.id)}
+                isSelectable={selectedHexIndex !== null}
+              />
+            ))}
+            {filteredTiles.length === 0 && (
+              <div className="text-slate-500 text-center py-8 italic">
+                No tiles found matching "{searchTerm}"
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 border-t border-slate-700 text-xs text-slate-500 text-center pb-[env(safe-area-inset-bottom)]">
+            {selectedHexIndex !== null
+              ? `Selected hex: #${selectedHexIndex}`
+              : 'Select a hex on the map to place a tile'}
+          </div>
+        </>
+      )}
     </div>
   );
 };
